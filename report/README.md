@@ -10,11 +10,29 @@ we use a pretrained model:
 
 ## Faster R-CNN model
 
+there are 4 faster rcnn model builders in [PyTorch](https://pytorch.org/vision/master/models/faster_rcnn.html):
+1) fasterrcnn_resnet50_fpn(*[, weights, ...]) Faster R-CNN model with a ResNet-50-FPN backbone from the Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks paper.
+2) fasterrcnn_resnet50_fpn_v2(*[, weights, ...]) Constructs an improved Faster R-CNN model with a ResNet-50-FPN backbone from Benchmarking Detection Transfer Learning with Vision Transformers paper.
+3) fasterrcnn_mobilenet_v3_large_fpn(*[, ...]) Constructs a high resolution Faster R-CNN model with a MobileNetV3-Large FPN backbone.
+4) fasterrcnn_mobilenet_v3_large_320_fpn(*[, ...]) Low resolution Faster R-CNN model with a MobileNetV3-Large backbone tuned for mobile use cases.
+
+first im using the first option:
 ```
 fasterrcnn = fasterrcnn_resnet50_fpn(pretrained=True)
 ```
 
 add explanation of faster rcnn model. 
+
+- Backbone with FPN
+    - Intermediate Layer Getter - is the body, here is the ResNet50
+    - Feature Pyramid Network
+- Region Proposal Network
+    - RPN Head    
+    - Anchor Generator
+- ROI Heads
+    - Multi Scale
+    - Two MLP
+    - Box Predictor
 
 we modify the box predictor to adjust the number of classes
 ```
