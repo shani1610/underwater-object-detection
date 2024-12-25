@@ -6,7 +6,35 @@ This is self study case study i did to practice object detection metodology. i u
 it is a small dataset representing challenges we can face in a lot of real case scenarios. 
 im using faster rcnn model, at the first step i only changed the last layer to fit the 8 categories and then finetune it. 
 
-we use a pretrained model:
+we use a pretrained model Faster RCNN:
+
+## Background on Faster RCNN 
+
+# R-CNN Family 
+
+I will start with RCNN, the first work in this family of region convulotional nueral networks.
+
+Inference Time:
+1) Region Proposal - we divide the image to regions using external methods like selective search or edgeboxes. around 2000 proposal per image.
+2) Wrapping - we wrap the proposal region to fit it to the cnn input size
+3) Feature Extraction - using CNN like AlexNet or ResNet we can extract from the image a feature vector, usually high dimention like 4096, this vector represents the content of the region proposal. 
+5) Object Classification - category specific linear SVM. it was trained on negative sample, where the object is missing, positive samples, where the object is present, and for the inbetween cases, they used IoU overlap threshold that was selected by a grid search. they prefered SVM over the Softmax of the CNN. 
+note: so if we have 2000 proposal per image, and each proposal was forward pass to the CNN and resulted in high dimension vector, is means we have 2000x4096 matrix, and the size of the SVN is 4096xN (N num of classes) because we have different SVN per class. 
+6) Bounding Box - we train the regressor using pairs of {P,G} to each class. P is for the proposal and G is for the ground trught. each contain x,y coordinates of the center of the box and w,h the with and hieght. we learnt a linear model that transform P into G^ by optimizing the regularized least squares objective.
+7) NMS - non maximum suppression to remove highly overlapped bounding boxes. 
+
+Training of the CNN:
+1) change the last layer to N+1 classification layer
+2) supervised pre training - only labels no bounding boxes.
+3) domain specific fine tuning - continue training with the wraped region proposals and biased the sampling towards positive samples. (which are rare compared to the background).
+   
+<img src="./assets/rcnn.png" alt="drawing" width="700"/>
+
+<img src="./assets/fast.png" alt="drawing" width="700"/>
+
+<img src="./assets/faster.png" alt="drawing" width="700"/>
+
+images from [mathworks](https://www.mathworks.com/help/vision/ug/getting-started-with-r-cnn-fast-r-cnn-and-faster-r-cnn.html)
 
 ## Faster R-CNN model
 
