@@ -124,3 +124,25 @@ what can we do?
 3) cross validation for hyper parameter tuning
 4) try other optimizer, learning rate, epoch number
 
+
+## Exploratory data analysis
+before understaind the data lets first recheck the bounding box the labels. 
+2 problems i noticed when just visualized the boxes over the images. 
+1) there was an offset between the classes, shark was consistently misclassifed as stirngifish.
+2) there was a mirroring prolem because i did only augmentation on the images but not on the labels. 
+
+   for the first lets undertand how
+
+for the second, let understand how yolo and faster rcnn are different. 
+
+YOLO represents bounding boxes in relative (normalized) format using 5 values per object:
+[class_id] [x_center] [y_center] [width] [height]
+ Class index (starting from 0). x_center, y_center → The center of the bounding box as a fraction of the image width & height (values between 0 and 1).
+width, height → Box dimensions as a fraction of the image width & height.
+
+Faster R-CNN uses absolute pixel values in the format:
+[x_min, y_min, x_max, y_max]
+(x_min, y_min) = Top-left corner of the box.
+(x_max, y_max) = Bottom-right corner of the box.
+
+
