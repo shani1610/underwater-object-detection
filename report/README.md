@@ -145,4 +145,43 @@ Faster R-CNN uses absolute pixel values in the format:
 (x_min, y_min) = Top-left corner of the box.
 (x_max, y_max) = Bottom-right corner of the box.
 
+abit on augmentation, 
+please make sure you cant just had the augmentation on 
+,aybe 
+a bit about Weights & Biases:
+I wanted to do the hyper parameters tuning and track the expiriements,
+so i used wieghts and biases and specifically used smt called sweeps. 
+you first define the sweep by creating dictionary or a yaml file with the parameters, the search strategy and the optimization metric et all. 
+then i initialize the sweep using sweep_id = wandb.sweep(sweep_config). 
+later on you run the sweep agent, you pass the sweep_id and run it with a function that train you model. 
+actuallym weigth&biases have a sweep controller on their machine that is issue the instructions describing a new run to execute and these instruction, these agents run on you machine ehich makes it easy to scale up sweeps. 
+
+when we define a sweep_id start the sweep on weights and biases and you can see it in the weights and biases website. 
+
+the wandb.agents(sweep_id, train), if you use random search you need to add a stopping criteria count. the agents its the one that runs. 
+
+but hyper parameter tuning is in the end. 
+
+
+
+Step	What to Try?	Priority
+1️⃣ First Evaluation	Compute mAP, IoU, and class-wise precision	✅ Must do first
+2️⃣ Augmentations	Add Mosaic, MixUp, and CutMix	✅ Very important
+3️⃣ Learning Rate & Optimizer	Try SGD vs. AdamW, use StepLR scheduler	✅ High impact
+4️⃣ Loss Function	Try Focal Loss, GIoU Loss if needed	🔹 Medium impact
+5️⃣ Hyperparameter Tuning	Tune batch size, epochs, LR	🔹 Low priority (do after other steps)
+6️⃣ Longer Training	If loss/mAP is still improving	🔹 Optional
+
+
+for augmantation:
+1️⃣ Selective Augmentation for Rare Classes – Apply Albumentations only for rare object images.
+2️⃣ Class-Balanced Sampling – Make sure rare classes appear in every batch.
+3️⃣ Focal Loss – Helps reduce dominance of common classes like fish.
+4️⃣ Adjust Anchor Sizes – If small rare objects are missing.
+5️⃣ Lower Detection Thresholds for Rare Classes – If they're predicted with low confidence
+
+
+Class Imbalance in Object Detection: An Experimental Diagnosis and Study of Mitigation Strategies
+
+https://arxiv.org/html/2403.07113v1#S4
 
