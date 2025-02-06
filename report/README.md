@@ -1,16 +1,44 @@
-# Underwater Report 
+# Object Detection Case Study – Underwater Dataset
 
 ## Shani Israelov 
 
-This is self study case study i did to practice object detection metodology. i used the underwater dataset from kaggle, 
-it is a small dataset representing challenges we can face in a lot of real case scenarios. 
-im using faster rcnn model, at the first step i only changed the last layer to fit the 8 categories and then finetune it. 
+This is a self-study case study I did to practice object detection methodology. I used the underwater dataset from Kaggle.
+It is a small dataset representing challenges we can face in many real-world scenarios. The size of the dataset here is the main challenge, and we will try to get the best results we can. This is a work in progress.
+Since my dataset is small, our approach will be to take a pre-trained model, change the last layer to fit the categories, and fine-tune only this layer on our dataset.
+The model I’m using here is Faster R-CNN. The advantage is that it is simple to use since PyTorch includes it. The application is not for real-time use, and accuracy is the most important metric here.
 
-we use a pretrained model Faster RCNN:
+This report goes as follows: we will start with Background on Faster R-CNN – beginning with R-CNN, discussing the loss function, and showing the modifications we made to the model. Then, we will cover EDA (Exploratory Data Analysis) – exploring how the data looks, its distribution, and the challenges we face. Here, we will discuss imbalance, augmentation, and WeightedRandomSampling. Moving on to the exciting part, training, we will discuss what we are training, how we can perform hyperparameter tuning using Weights & Biases, optimizer selection, and learning rate adjustments. Next, we will address Evaluation Metrics – explaining how we evaluate our results, including mAP and the confusion matrix. Finally, since this is a work in progress, I will share future directions and other experiments I intend to perform.
 
-## Background on Faster RCNN 
+   ---
 
-# R-CNN Family 
+## Table of Contents
+1. [Background on Faster R-CNN](#background-on-faster-r-cnn)  
+   - R-CNN, Fast RCNN, Faster RCNN
+   - Loss function  
+   - Modifications  
+
+2. [Exploratory Data Analysis (EDA)](#exploratory-data-analysis-eda)  
+   - Dataset distribution  
+   - Class imbalance and Over-Sampling
+   - Data augmentation strategies  
+
+3. [Training the Model](#training-the-model)  
+   - Training objectives  
+   - Hyperparameter tuning with **Weights & Biases**  
+   - Optimizer selection  
+   - Learning rate adjustments  
+
+4. [Evaluation Metrics](#evaluation-metrics)  
+   - How we measure performance  
+   - Understanding **mAP (Mean Average Precision)**  
+   - Confusion matrix analysis  
+
+5. [Future Directions](#future-directions)  
+
+---
+## Background on Faster R-CNN  
+
+### R-CNN Family 
 
 I will start with RCNN, the first work in this family of region convulotional nueral networks.
 
@@ -36,8 +64,25 @@ Training of the CNN:
 
 images from [mathworks](https://www.mathworks.com/help/vision/ug/getting-started-with-r-cnn-fast-r-cnn-and-faster-r-cnn.html)
 
-## Faster R-CNN model
+Faster R-CNN model
 
+### Loss
+
+the loss - what are we training on?
+
+The loss function in Faster R-CNN consists of two main components:
+
+Region Proposal Network (RPN) Loss: the RPN responsible got generating region proposals. 
+it takes feature map from the backbone network, in our case ResNet50, and output set of anchor boxes with objectness scores and bounding box refinments. 
+The RPN loss consist of classification loss and regression loss. 
+
+the classification loss determines whether an anchor contains an object or background, uses **binary-cross enthropy loss** object vs background.
+the regression loss adjusts the anchor box coordinates to better fit the ground truth, uses **smooth l1 loss** between the predicted trasformation for an anchor and the transformation needed to align with the ground truth. 
+
+Region-based CNN (Fast R-CNN) Loss: this loss is also consist from classification and regression loss but in this time we are after the regions were RoI Pooled and passed through a classifier and a regressor. this time the classification is for multi-class and it uses cross enthropy loss, and the regression is smooth l1 loss that further refined the bounding box coordinates. 
+
+
+### Modifications 
 there are 4 faster rcnn model builders in [PyTorch](https://pytorch.org/vision/master/models/faster_rcnn.html):
 1) fasterrcnn_resnet50_fpn(*[, weights, ...]) Faster R-CNN model with a ResNet-50-FPN backbone from the Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks paper.
 2) fasterrcnn_resnet50_fpn_v2(*[, weights, ...]) Constructs an improved Faster R-CNN model with a ResNet-50-FPN backbone from Benchmarking Detection Transfer Learning with Vision Transformers paper.
@@ -48,8 +93,6 @@ first im using the first option:
 ```
 fasterrcnn = fasterrcnn_resnet50_fpn(pretrained=True)
 ```
-
-add explanation of faster rcnn model. 
 
 - Backbone with FPN
     - Intermediate Layer Getter - is the body, here is the ResNet50
@@ -83,55 +126,19 @@ torchinfo to print the model summary:
 
 <img src="./assets/run1_trainable.png" alt="drawing" width="700"/>
 
-## training:
-```
-# Optimizer and Learning Rate
-optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-4)
-#optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=0.005, momentum=0.9, weight_decay=0.0005)
 
-# Learning rate scheduler
-lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
-#lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
+---
 
-```
+## Exploratory Data Analysis (EDA)
 
-## results
-running on the training data we have 
-Epoch 20/20, Loss: 165.5529
-this is high training loss. 
-
-when running on the val dataloader we get 
-Precision: 0.3974
-Recall: 2.9841
-mAP: 1.2619
-
-some images:
-
-<img src="./assets/run1_pred1.png" alt="drawing" width="200"/>
-<img src="./assets/run1_gt1.png" alt="drawing" width="200"/>
-
-<img src="./assets/run1_pred2.png" alt="drawing" width="200"/>
-<img src="./assets/run1_gt2.png" alt="drawing" width="200"/>
-
-we have several problems:
-1) training data is small
-2) precision is low
-3) loss is high
-
-what can we do? 
-1) train more layers (which?)
-2) add augmentations
-3) cross validation for hyper parameter tuning
-4) try other optimizer, learning rate, epoch number
-
-
-## Exploratory data analysis
+### Dataset Overview 
+ 
 before understaind the data lets first recheck the bounding box the labels. 
 2 problems i noticed when just visualized the boxes over the images. 
 1) there was an offset between the classes, shark was consistently misclassifed as stirngifish.
 2) there was a mirroring prolem because i did only augmentation on the images but not on the labels. 
 
-   for the first lets undertand how
+for the first lets undertand how
 
 for the second, let understand how yolo and faster rcnn are different. 
 
@@ -145,43 +152,82 @@ Faster R-CNN uses absolute pixel values in the format:
 (x_min, y_min) = Top-left corner of the box.
 (x_max, y_max) = Bottom-right corner of the box.
 
-abit on augmentation, 
+### augmantation
 please make sure you cant just had the augmentation on 
 ,aybe 
-a bit about Weights & Biases:
+suggestions
+Selective Augmentation for Rare Classes – Apply Albumentations only for rare object images.
+Class-Balanced Sampling – Make sure rare classes appear in every batch.
+Focal Loss – Helps reduce dominance of common classes like fish.
+Adjust Anchor Sizes – If small rare objects are missing.
+Lower Detection Thresholds for Rare Classes – If they're predicted with low confidence
+
+---
+
+## Training the Model  
+
+### training:
+
+```
+# Optimizer and Learning Rate
+optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-4)
+#optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=0.005, momentum=0.9, weight_decay=0.0005)
+
+# Learning rate scheduler
+lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
+#lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
+
+```
+ 
+### Weights & Biases:
+
 I wanted to do the hyper parameters tuning and track the expiriements,
 so i used wieghts and biases and specifically used smt called sweeps. 
 you first define the sweep by creating dictionary or a yaml file with the parameters, the search strategy and the optimization metric et all. 
 then i initialize the sweep using sweep_id = wandb.sweep(sweep_config). 
 later on you run the sweep agent, you pass the sweep_id and run it with a function that train you model. 
 actuallym weigth&biases have a sweep controller on their machine that is issue the instructions describing a new run to execute and these instruction, these agents run on you machine ehich makes it easy to scale up sweeps. 
-
 when we define a sweep_id start the sweep on weights and biases and you can see it in the weights and biases website. 
-
 the wandb.agents(sweep_id, train), if you use random search you need to add a stopping criteria count. the agents its the one that runs. 
+but hyper parameter tuning is not top priority, in the end. 
 
-but hyper parameter tuning is in the end. 
+---
+
+## Evaluation Metrics 
+
+NMS 
+first running the visualization i got very bad results, 
+first need to make sure we normalize the training and val loss so we could compare. 
+second i notice a problem of offset.
+third the offset and the way we count confusion matrix made me add the background class as YOLO doing. 
+forth so many boxes, this is because we didnt do non maximum supression. 
+
+some images:
+
+<img src="./assets/run1_pred1.png" alt="drawing" width="200"/>
+<img src="./assets/run1_gt1.png" alt="drawing" width="200"/>
+
+<img src="./assets/run1_pred2.png" alt="drawing" width="200"/>
+<img src="./assets/run1_gt2.png" alt="drawing" width="200"/>
+
+---
+
+## Future Directions  
+This project is a work in progress, and possible next steps include: 
+-  More special Augmentations	such as Mosaic, MixUp, and CutMix, study is [here](https://arxiv.org/html/2403.07113v1#S4
+)
+-  Learning Rate & Optimizer	Try SGD vs. AdamW, use StepLR scheduler
+-  Loss Function	Try Focal Loss, GIoU Loss if needed
+-  Hyperparameter Tuning	Tune batch size, epochs, LR
+-  Longer Training	If loss/mAP is still improving
+- **Experimenting with different backbones** to improve performance.  
+- **Exploring transfer learning** beyond Faster R-CNN.  
+
+--- 
+
+### Refrences
 
 
+Thank you
 
-Step	What to Try?	Priority
-1️⃣ First Evaluation	Compute mAP, IoU, and class-wise precision	✅ Must do first
-2️⃣ Augmentations	Add Mosaic, MixUp, and CutMix	✅ Very important
-3️⃣ Learning Rate & Optimizer	Try SGD vs. AdamW, use StepLR scheduler	✅ High impact
-4️⃣ Loss Function	Try Focal Loss, GIoU Loss if needed	🔹 Medium impact
-5️⃣ Hyperparameter Tuning	Tune batch size, epochs, LR	🔹 Low priority (do after other steps)
-6️⃣ Longer Training	If loss/mAP is still improving	🔹 Optional
-
-
-for augmantation:
-1️⃣ Selective Augmentation for Rare Classes – Apply Albumentations only for rare object images.
-2️⃣ Class-Balanced Sampling – Make sure rare classes appear in every batch.
-3️⃣ Focal Loss – Helps reduce dominance of common classes like fish.
-4️⃣ Adjust Anchor Sizes – If small rare objects are missing.
-5️⃣ Lower Detection Thresholds for Rare Classes – If they're predicted with low confidence
-
-
-Class Imbalance in Object Detection: An Experimental Diagnosis and Study of Mitigation Strategies
-
-https://arxiv.org/html/2403.07113v1#S4
 
