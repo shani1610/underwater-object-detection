@@ -5,11 +5,15 @@ I've been using Faster RCNN with ResNet50 backbone.
 
 ## Installation
 
+```
 git clone https://github.com/shani1610/underwater-object-detection.git
-
+```
+```
 pip install requirements.txt
+```
 
 ## Dataset
+
 ```
 underwater-object-detection
   |- data
@@ -20,9 +24,10 @@ underwater-object-detection
   | |- valid
   |- scripts
 ```
+
 ### option 1:
 
-download the data from kaggle in the following link: https://www.kaggle.com/datasets/slavkoprytula/aquarium-data-cots
+download the data from kaggle in the following [link](https://www.kaggle.com/datasets/slavkoprytula/aquarium-data-cots)
 
 extract the zip file and put its content in a data directory.
 
