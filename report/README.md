@@ -162,7 +162,7 @@ we can clearly see a huge class imbalance.
 
 <img src="./assets/class_co_occurrence.png" alt="drawing" width="400"/>
 
-<img src="./assets/image_counts" alt="drawing" width="400"/>
+<img src="./assets/image_counts.png" alt="drawing" width="400"/>
 
 <img src="./assets/avg_objects_per_image.png" alt="drawing" width="400"/>
 
@@ -183,7 +183,7 @@ Lower Detection Thresholds for Rare Classes – If they're predicted with low co
 the first augmentation i added was horizontal flip 
 in the following image we see mirror mistake, it had happen because I applied augmentation of horizontal flip without doing the same for the bounding box.
 
-<img src="./assets/augmentation_mistake.png" alt="drawing" width="400"/>
+<img src="./assets/augmentation_mistake.png" alt="drawing" width="200"/>
 
 ---
 
@@ -230,7 +230,9 @@ the area under this curve is the AP,
 and since we are dealing with multi class we will do it to each class, average and get the mAP. 
 see om the image:
 
-<img src="./assets/mAP_calc.png" alt="drawing" width="200"/>
+<img src="./assets/mAP_calc.png" alt="drawing" width="400"/>
+
+Image from the great post by Aqeel Anwar, [Medium](https://medium.com/towards-data-science/what-is-average-precision-in-object-detection-localization-algorithms-and-how-to-calculate-it-3f330efe697b)
 
 ### Confusion Matrix 
 
