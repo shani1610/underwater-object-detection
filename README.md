@@ -1,7 +1,10 @@
-# Underwater Object Detection
+# Object Detection Case Study – Underwater Dataset
 
 In this project Ive been working on the task of object detection on Underwater creatures.
 I've been using Faster RCNN with ResNet50 backbone. 
+the full report is [here](https://github.com/shani1610/underwater-object-detection/tree/main/report) 
+
+<img src="./report/assets/data_sample1.png" alt="drawing" width="400"/>
 
 ## Installation
 
