@@ -134,13 +134,16 @@ torchinfo to print the model summary:
 ### Dataset Overview 
  
 before understaind the data lets first recheck the bounding box the labels. 
-2 problems i noticed when just visualized the boxes over the images. 
-1) there was an offset between the classes, shark was consistently misclassifed as stirngifish.
-2) there was a mirroring prolem because i did only augmentation on the images but not on the labels. 
 
-for the first lets undertand how
+<img src="./assets/data_sample1.png" alt="drawing" width="400"/>
 
-for the second, let understand how yolo and faster rcnn are different. 
+when visualizing we can find errors so this is very important and i recomand to run it not only on one batch. 
+
+### YOLO to Faster RCNN
+
+one the problems i encountered and noticed when visualizing, i saw there was an offset between the classes, shark was consistently misclassifed as stirngifish.
+this had happen because of the ffirence of yolo and faster rcnn formats for bounding boxes and labels.
+this dataset is given in YOLO format, so let take a moment to mention the difference between these formats:
 
 YOLO represents bounding boxes in relative (normalized) format using 5 values per object:
 [class_id] [x_center] [y_center] [width] [height]
@@ -152,15 +155,35 @@ Faster R-CNN uses absolute pixel values in the format:
 (x_min, y_min) = Top-left corner of the box.
 (x_max, y_max) = Bottom-right corner of the box.
 
-### augmantation
-please make sure you cant just had the augmentation on 
-,aybe 
-suggestions
+### Plots
+we can clearly see a huge class imbalance.
+
+<img src="./assets/class_distribution.png" alt="drawing" width="400"/>
+
+<img src="./assets/class_co_occurrence.png" alt="drawing" width="400"/>
+
+<img src="./assets/image_counts" alt="drawing" width="400"/>
+
+<img src="./assets/avg_objects_per_image.png" alt="drawing" width="400"/>
+
+<img src="./assets/aspect_ratio_distribution.png" alt="drawing" width="400"/>
+
+### Dealing with Class Imbalance
+I used WeightedRandomSampler 
+make sure to apply seed if you want to keep your expiriment consistent, cuz it will give sligtly different distribution, 
+the distribution is still imbalance so there is work to do. 
+suggestions:
 Selective Augmentation for Rare Classes – Apply Albumentations only for rare object images.
 Class-Balanced Sampling – Make sure rare classes appear in every batch.
 Focal Loss – Helps reduce dominance of common classes like fish.
 Adjust Anchor Sizes – If small rare objects are missing.
 Lower Detection Thresholds for Rare Classes – If they're predicted with low confidence
+
+### Augmantation
+the first augmentation i added was horizontal flip 
+in the following image we see mirror mistake, it had happen because I applied augmentation of horizontal flip without doing the same for the bounding box.
+
+<img src="./assets/augmentation_mistake.png" alt="drawing" width="400"/>
 
 ---
 
@@ -179,7 +202,7 @@ lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1
 
 ```
  
-### Weights & Biases:
+### Weights & Biases for Hyper parameter tuning:
 
 I wanted to do the hyper parameters tuning and track the expiriements,
 so i used wieghts and biases and specifically used smt called sweeps. 
@@ -195,11 +218,28 @@ but hyper parameter tuning is not top priority, in the end.
 
 ## Evaluation Metrics 
 
-NMS 
 first running the visualization i got very bad results, 
 first need to make sure we normalize the training and val loss so we could compare. 
+
+### IoU, Precision, Recall, Map 
+what are we getting from the model outputs? 
+the predicted bounding boxes, the labels and the confidence score in each label. 
+choosing the cofidence score is not an easy task. 
+so we are calculating Precision and Recall over several confidence scores and from this we create the Precision-Recall Curve, 
+the area under this curve is the AP,
+and since we are dealing with multi class we will do it to each class, average and get the mAP. 
+see om the image:
+
+<img src="./assets/mAP_calc.png" alt="drawing" width="200"/>
+
+### Confusion Matrix 
+
 second i notice a problem of offset.
 third the offset and the way we count confusion matrix made me add the background class as YOLO doing. 
+
+<img src="./assets/confusion_matrix1.png" alt="drawing" width="200"/>
+
+### Non-Maximum supression
 forth so many boxes, this is because we didnt do non maximum supression. 
 
 some images:
